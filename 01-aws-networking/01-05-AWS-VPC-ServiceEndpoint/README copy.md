@@ -23,7 +23,7 @@
 EC2 에 적용할 보안 그룹을 생성 합니다.  
 EC2 의 `Security Group` 메뉴로 이동 하여, `보안 그룹 생성` 을 선택합니다.
 
-- 보안 그룹 이름 : `{skuserNN}-web-sg`
+- 보안 그룹 이름 : `{skuserNN}-{리전코드}-web-sg`
 - 설명: `For Web server` 
 - VPC: 이전 단계에서 생성한 VPC 를 선택
 - 인바운드 규칙에서 `규칙 추가`  
@@ -32,7 +32,7 @@ EC2 의 `Security Group` 메뉴로 이동 하여, `보안 그룹 생성` 을 선
   * 포트범위 : `80`
   * 소스 : `Anywhere-IPv4` (0.0.0.0/0)
 - 태그:
-  * 키: `Name`  값: `{skuserNN}-web-sg`
+  * 키: `Name`  값: `{skuserNN}-{리전코드}-web-sg`
 
 보안 그룹 생성 완료 후, 추가로 보안 그룹을 생성합니다.  
 
@@ -69,8 +69,8 @@ EC2 의 인스턴스 메뉴로 이동하여, '인스턴스 시작' 을 클릭합
 - 아키텍쳐: 64비트(x86)
 - 인스턴스 유형: t3.micro
 - 키페어: 위에서 생성한 키페어 선택 (`{skuserNN}-{리전코드}`)
-- VPC: 이전 단계에서 생성한 `{skuserNN}-aws-vpc` 선택
-- 서브넷: 프라이빗 서브넷 `{skuserNN}-aws-private-subnet-03` 또는 `{skuserNN}-aws-private-subnet-04` 선택
+- VPC: 이전 단계에서 생성한 `{skuserNN}-aws-{리전코드}-vpc` 선택
+- 서브넷: 프라이빗 서브넷 `{skuserNN}-aws-{리전코드}-private-subnet-03` 또는 `{skuserNN}-aws-{리전코드}-private-subnet-04` 선택
 - 퍼블릭 IP: `비활성화`
 - 방화벽(보안그룹): 기존 보안 그룹 선택 - `{skuserNN}-private-sg`
 
@@ -82,8 +82,8 @@ EC2 의 인스턴스 메뉴로 이동하여, '인스턴스 시작' 을 클릭합
 - 아키텍쳐: 64비트(x86)
 - 인스턴스 유형: `t3.micro`
 - 키페어: 위에서 생성한 키페어 선택 (`{skuserNN}-{리전코드}`)
-- VPC: 이전 단계에서 생성한 `{skuserNN}-aws-vpc` 선택
-- 서브넷: 프라이빗 서브넷 `{skuserNN}-aws-subnet-01` 또는 `{skuserNN}-aws-subnet-02` 선택
+- VPC: 이전 단계에서 생성한 `{skuserNN}-aws-{리전코드}-vpc` 선택
+- 서브넷: 프라이빗 서브넷 `{skuserNN}-aws-{리전코드}-subnet-01` 또는 `{skuserNN}-aws-{리전코드}-subnet-02` 선택
 - 퍼블릭 IP: `활성화`
 - 방화벽(보안그룹): 기존 보안 그룹 선택 - `{skuserNN}-web-sg`
 - 고급 세부 정보 - 사용자 데이터에 아래와 같이 입력
@@ -95,8 +95,7 @@ sudo apt install -y nginx
 sudo systemctl start nginx
 sudo systemctl enable nginx
 
-TOKEN=(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-IP_ADDR=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
+IP_ADDR=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
 
 sudo rm -rf /var/www/html/*
 sudo chown -R ubuntu:ubuntu /var/www
