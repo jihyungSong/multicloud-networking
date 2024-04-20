@@ -110,6 +110,8 @@ sudo chown -R root:root /var/www
 
 ## 4. EC2 인스턴스 통신 확인
 
+Public 서브넷에 배포한 인스턴스  `{skuserNN}-web-instance` 의 Public IP 로 웹 브라우저를 통해 정상 응답 확인 합니다.  
+`{skuserNN}-web-instance` 에 SSH 접근 후, Private Subnet 에 배포된 `{skuserNN}-private-instance` 의 Private IP 로 Ping 테스트를 수행합니다.  
 
 ---
 
