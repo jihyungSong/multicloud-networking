@@ -87,7 +87,7 @@ EC2 의 인스턴스 메뉴로 이동하여, '인스턴스 시작' 을 클릭합
 - 퍼블릭 IP: `활성화`
 - 방화벽(보안그룹): 기존 보안 그룹 선택 - `{skuserNN}-web-sg`
 - 고급 세부 정보 - 사용자 데이터에 아래와 같이 입력
-"""
+```
 #!/bin/bash
 
 sudo apt update -y
@@ -103,7 +103,7 @@ sudo chmod 2775 /var/www
 
 sudo echo "<h1>HELLO</h1> <p>SERVER IP : $IP_ADDR</p>" >> /var/www/html/index.html
 sudo chown -R root:root /var/www
-"""
+```
 
 설정을 완료 후 인스턴스 시작을 클릭해 Web 서버용 인스턴스를 배포합니다.  
 
