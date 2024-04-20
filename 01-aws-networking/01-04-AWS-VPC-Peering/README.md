@@ -1,13 +1,13 @@
-# AWS VPC 기본 환경 구성 (2)
+# AWS VPC 기본 환경 구성 (3) - EC2 인스턴스 배포
 
-AWS VPC 구성에 Private Subnet 과 NAT Gateway 구성을 추가 합니다.  
-아래 구성은 [AWS VPC 기본 환경 구성 (1)](../01-01-AWS-VPC/README.md) 에 이어서 진행합니다. 
+위 단계에서 구성한 VPC 에 EC2 인스턴스를 배포하여 통신 확인을 수행합니다.
+아래 구성은 [AWS VPC 기본 환경 구성 (1)](../01-01-AWS-VPC/README.md)과 [AWS VPC 기본 환경 구성 (2)](../01-02-AWS-VPC-NAT-Gateway/README.md)에 이어서 진행합니다. 
 아래 순서로 진행됩니다.
 
-1. Private Subnet 구성
-2. Private Route Table 구성
-3. NAT Gateway 구성
-4. NAT Gateway 를 위한 Route Table 경로 업데이트
+1. Keypair 생성
+2. Security Group 생성
+3. EC2 인스턴스 배포
+4. EC2 인스턴스 통신 확인
 
 
 ---

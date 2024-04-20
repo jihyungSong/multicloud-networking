@@ -7,7 +7,6 @@ AWS VPC 환경을 구성 합니다.
 2. Subnet 구성
 3. Internet Gateway 구성
 4. Route Table 구성
-5. Security Group 구성
 
 ---
 ## 1. VPC 생성
@@ -59,19 +58,6 @@ Route tables 리스트에서 해당 VPC ID (`skuserNN-aws-리전코드-vpc` VPC 
 해당 Route table 을 선택하고, 하단 서브탭에서 `Routes` 을 클릭 후, `Edit routes` 로 추가 경로를 설정합니다.
 * Destination : `0.0.0.0/0`
 * Target : 이전 단계에서 생성한 Internet Gateway 선택
-
-
-## 5. Security Group 구성
-해당 VPC 에 생성할 EC2 Instance 에 적용할 Security Group 을 설정합니다.  
-VPC 의 Security groups 메뉴로 이동 하여, 보안 그룹 룰을 추가 구성합니다.
-Security groups 리스트에서 해당 VPC ID (`skuserNN-aws-리전코드-vpc` VPC 의 ID) 로 검색 하여, VPC 가 생성 될때 자동으로 구성된 기본 Security Group 을 선택합니다.  
-
-  *- 참고 : 해당 security group 은 자동으로 생성되었기 때문에 Name 은 비어 있으며 Security group name 은 `default` 로 구성되어 있습니다. Name 을 편집하여 `skuserNN-aws-리전코드-sg` 로 이름을 수정합니다.* 
-
-해당 security group 을 선택하고, 하단 서브탭에서 `Inbound rules` 를 선택 하여, `Edit inbound rules` 로 추가 규칙을 생성 합니다.
-* Type: `SSH`
-* Source: `My IP` 를 선택. 자동으로 접속한 브라우저의 IP 가 설정 됩니다. 
-* Description: `My PC` 
 
 ---
 
