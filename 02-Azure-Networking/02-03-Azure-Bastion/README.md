@@ -37,7 +37,7 @@ Bastion 을 구성하려면, Basion 을 배포할 Virtual Network 에 `AzureBast
 
 ## 3. Bastion 을 통한 Virtual Machine 연결
 Bastion 을 통해 Virtual Machine 에 접속을 테스트 해봅니다.  
-상단 검색에서 `가상 머신` 을 선택 후, 이전 단계에서 배포한 `{skuserNN}-web-instance` 를 클릭 합니다.  
+상단 검색에서 `가상 머신` 을 선택 후, 이전 단계에서 배포한 `{skuserNN}-web-vm` 를 클릭 합니다.  
 서브 메뉴에서 `베스천` 을 클릭 후, 아래와 같이 선택 후 연결을 시도 합니다.  
 
 - 인증 유형: `VM 암호`

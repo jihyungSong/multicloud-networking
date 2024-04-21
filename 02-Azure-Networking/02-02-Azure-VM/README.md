@@ -14,7 +14,7 @@
   
 [기본 사항]
 1. 리소스 그룹: `{skuserNN}-resource-group`
-2. 가상 머신 이름: `{skuserNN}-web-instance`
+2. 가상 머신 이름: `{skuserNN}-web-vm`
 3. 지역: Virtual Network 와 동일 지역 선택
 4. 가용성 옵션: `인프라 중복이 필요하지 않습니다` 선택
 5. 보안 유형: `표준` 선택
@@ -35,7 +35,7 @@
 [네트워킹]
 1. 가상 네트워크: `{skuserNN}-azure-vnet` 선택
 2. 서브넷: `{skuserNN}-azure-subnet-01` 퍼블릭 서브넷 선택
-3. 공용 IP: `{skuserNN}-web-instance-ip` 새로 만드는 중 선택
+3. 공용 IP: `{skuserNN}-web-vm-ip` 새로 만드는 중 선택
 4. NIC 네트워크 기본 보안: `고급` 선택 (새로 만드는 중)
 5. VM 삭제시 공용 IP 및 NIC 삭제: 체크
 6. 부하 분산 옵션: `없음` 선택
@@ -73,7 +73,7 @@ sudo chown -R root:root /var/www
 위 Virtual Machine 은 배포와 함께 웹서버로 자동 구성 됩니다.  
 웹 서버의 정상 동작하기 위해서는 Network Security Group 에서 80 포트를 오픈해 주어야 합니다.  
 
-상단 검색에서 `네트워크 보안 그룹` 으로 검색 후, Virtual Machine 배포와 함께 생성했던 `{skuserNN}-web-instance-nsg` 을 선택 합니다.
+상단 검색에서 `네트워크 보안 그룹` 으로 검색 후, Virtual Machine 배포와 함께 생성했던 `{skuserNN}-web-vm-nsg` 을 선택 합니다.
 서브 메뉴에서 `인바운드 보안 규칙` 을 선택하고 `+ 추가`를 클릭하여 신규 규칙을 추가합니다. 
 
 - 소스: `Any`
@@ -91,7 +91,7 @@ sudo chown -R root:root /var/www
 
 ## 3. 접속 확인
 최종 배포 완료된 Virtual Machine 에서 웹 서비스가 정상 동작 중인지 확인 합니다.  
-상단 검색에서 `가상 머신` 로 검색 후, 위에서 생성한 가상 머신 `{skuserNN}-web-instance` 을 선택 합니다. 
+상단 검색에서 `가상 머신` 로 검색 후, 위에서 생성한 가상 머신 `{skuserNN}-web-vm` 을 선택 합니다. 
 서버의 공용 IP 주소 정보를 복사 하여, 웹 브라우저를 통해 접속을 시도합니다.  
   
 정상 응답이 오는지 최종 확인 합니다.  
