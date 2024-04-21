@@ -31,7 +31,7 @@ VPN Gateway 서버 구성을 위해, VPN Connection 설정 정보가 필요합�
 위 항목을 선택 후, Download 버튼을 누르면, 로컬 PC 에 VPN Connection 에 대한 설정 정보 파일을 확인 가능합니다.  
 해당 파일에 기재된 일부 정보들은 Cloudformation 수행시 참조될 예정입니다.  
 
-### (사전 준비-2) Secret manager 를 통한 Pre-shared Key 암호화 저장
+### (사전 준비-2) Secrets manager 를 통한 Pre-shared Key 암호화 저장
 
 `사전 준비-1` 을 통해 다운로드 받은 설정 내역 중 Pre-Shared Key 의 경우, VPN connection 의 데이터 암호화에 사용되는 인증키 입니다.   
 따라서 해당 키값을 좀 더 안전하게 보관하기 위해, AWS Secrets manager 를 사용하여 해당 키 값을 암호화 해서 저장하고, 해당 secret 정보를 Cloudformation 에 입력해서 사용하면 됩니다.  
@@ -39,7 +39,7 @@ VPN Gateway 서버 구성을 위해, VPN Connection 설정 정보가 필요합�
 먼저, `{skuserNN}-on-premise` 네트워크(VPC) 가 존재하는 리전으로 이동합니다.    
 그리고 `Secrets manager` 서비스 페이지로 이동하여, `Store a new secret` 를 수행합니다. (총 2개 생성)
 
-- Secret type : `Other type of secret`
+- 보안 암호 유형(Secret type) : `Other type of secret`
 - key / value : key 에는 `psk` value 에는 다운로드 받은 VPN configuration 파일 `IPSec Tunnel #1` 항목에서 `Pre-shared key` 를 복사하여 사용합니다. 
 - Secret name : `{skuserNN}-vpn-tun1` 
 
@@ -50,15 +50,16 @@ VPN Gateway 서버 구성을 위해, VPN Connection 설정 정보가 필요합�
 사전 준비를 마쳤다면, 본격적으로 Cloudformation 을 수행합니다.  
 Cloudformation 페이지로 이동하여, `Stacks` 메뉴에서 `Create stack` 을 수행 합니다.  
 
-- Prerequisite : `Template is ready`
-- Template source : `Upload a template file` 선택 후, 이전에 다운로드 받은 Cloudformation 구성 파일(`vpn-gateway-strongswan.yml`) 을 첨부합니다. 
+- 템플릿 준비(Prerequisite) : `기존 템플릿 선택 - Template is ready`
+- 템플릿 지정(Template source) : `Upload a template file` 선택 후, 이전에 다운로드 받은 Cloudformation 구성 파일(`vpn-gateway-strongswan.yml`) 을 첨부합니다. 
 - Stack name : `{skuserNN}-vpn-gateway`
 - Parameter
-  - Organization Identifier : `fc`
+  - Organization Identifier : `sk`
   - System Identifier : `skuserNN`
   - Application Identifier : `vpngw`
   - Environment Purpose : `test`
   - Authentication type : `psk`
+  - Common Parameters for Certificate-Based Authentication: 설정 없이 지나갑니다. 
   - VPN Tunnel 1
     - Name of secret in AWS Secrets Manager for VPN Tunnel1 Pre-Shared key : 위에서 생성한 Secret 이름 `{skuserNN}-vpn-tun1`
     - Virtual Private Gateway Outside IP Address : 설정 파일에서 `IPSec Tunnel #1` 항목 중 `Outside IP Addresses - Virtual Private Gateway` 에 IP 주소 값
@@ -77,7 +78,7 @@ Cloudformation 페이지로 이동하여, `Stacks` 메뉴에서 `Create stack` �
   - VPC CIDR Block : `192.168.0.0/16`
   - Subnet ID for VPN Gateway : `{skuserNN}-on-premise` VPC 에 배포된 Subnet 중 하나 선택
   - Use Elastic IP Address : `true`
-  - Elastic IP Address Allocation ID : 이전 단계에서 생성한 Customer Gateway 용 EIP 의 Allocation ID
+  - Elastic IP Address Allocation ID : 이전 단계에서 생성한 Customer Gateway 용 EIP 의 Allocation ID (ex. `eipalloc-080xxxxxxx`)
   - Local VPN Gateway's BGP ASN : `65000` 
   - EC2 AMI ID : `/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-ebs`
   - EC2 Instance Type : `t3a.micro`
@@ -86,23 +87,10 @@ Cloudformation 페이지로 이동하여, `Stacks` 메뉴에서 `Create stack` �
 
 ## 2. Transit Gateway 와 VPN 연동
 
-On-premise 에 VPN Gateway 구성을 마쳤다면, VPN Connection 과 Transit Gateway 를 연동합니다.  
-`Transit gateway attachments` 메뉴로 이동하여, `Create transit gateway attachment` 를 수행 합니다.  
+On-premise 에 VPN Gateway 구성을 마쳤다면, VPN Connection 과 Transit Gateway 이 연결된 것을 확인 가능하다.  
+`Transit gateway attachments` 메뉴로 이동하여, 리소스 유형이 `VPN` 인 것 중에 Transit Gateway ID 로 검색 하면, VPN Gateway 와 Transit Gateway  연동 내용을 확인 가능하다. 
 
-- name : `{skuserNN}-on-prem-tgw-attach`
-- Transit gateway ID : 이전 단계에서 생성한 `{skuserNN}-transit-gateway` 선택
-- Attachment type : `VPN`
-- Customer Gateway : `Existing`
-- Customer Gateway ID : `{skuserNN}-on-premise-cgw`
-- Routing options : `Dynamic (requires BGP)`
-
-구성 완료 후, 시간이 지나면, State 가 `Available` 로 변경되는 것을 확인 합니다.  
-
-이후, AWS VPC 로 이동하여, On-premise network 와 네트워크 통신이 가능하도록, 경로 설정을 추가하도록 합니다.  
-`Route tables` 메뉴로 이동하여, `{skuserNN}-aws-vpc` 에 연결된 Route table 을 선택 하고, 하단 `Route` 탭으로 이동하여, `Edit routes` 를 수행합니다.
-
-- Destination : `192.168.0.0/16` (On-premise 네트워크의 CIDR)
-- Target : Transit gateway 선택 (`{skuserNN}-tgw-attach`)
+*Cloudformation 을 통해 만들어졌기 때문에 Name 이 제대로 설정되지 않았을 수 있다. Name 을 `{skuserNN}-on-prem-tgw-attach` 로 수정한다. *
 
 On-premise 네트워크에서도 VPN 과 통신이 가능하도록 경로 설정을 추가하도록 합니다.  
 `Route tables` 메뉴에서 `{skuserNN}-on-premise` 에서 사용 중인 route table 을 선택하고 하단 탭에서 `Routes` 를 선택하여, `Edit routes` 를 수행합니다.
@@ -114,6 +102,9 @@ On-premise 네트워크에서도 VPN 과 통신이 가능하도록 경로 설정
 ## 3. AWS VPC 와 On-premise 간 통신 확인을 위한 EC2 Instance 배포 및 통신 확인
 
 AWS VPC 와 On-premise 간 VPN 연동을 위한 모든 설정을 마쳤습니다.  
-실제 통신이 되는지, VPC 와 On-premise 네트워크 각각 EC2 Instance 를 생성하고 두 인스턴스간 Private IP 로 Ping 을 통해 연결이 되는지 확인합니다.  
+실제 통신이 되는지, On-premise 네트워크에 EC2 Instance 를 생성하고 Transit Gateway 를 통해 연동된 VPC 의 Private Subnet 에 배포된 EC2 인스턴스의 Private IP 로 Ping 을 통해 연결이 되는지 확인합니다.  
 (Security Group 에서 ICMP 통신 허용 필요)
 
+---
+
+Transit Gateway 를 활용한 On-premise 연동 실습을 완료 하였습니다.  

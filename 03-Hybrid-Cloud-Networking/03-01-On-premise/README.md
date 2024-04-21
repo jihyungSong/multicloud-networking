@@ -53,7 +53,7 @@ Internet gateway 를 VPC 와 연동하였지만, 실제 Subnet 에 인터넷 통
 VPC 의 `Route tables` 메뉴로 이동 하여, 경로 설정을 구성합니다.  
 Route tables 리스트에서 해당 VPC ID (`{skuserNN}-on-premise` VPC 의 ID) 로 검색 하여, VPC 가 생성 될때 자동으로 구성된 기본 Route table 을 선택합니다.  
 
-  *- 참고 : 해당 Route table 는 자동으로 생성되었기 때문에 Name 은 비어 있으며, Main : Yes 로 구성되어 있습니다.* 
+  *- 참고 : 해당 Route table 는 자동으로 생성되었기 때문에 Name 은 비어 있으며, Main : Yes 로 구성되어 있습니다. Name 을 `{skuserNN}-on-premise-route-table` 로 수정합니다. * 
 
 
 해당 Route table 을 선택하고, 하단 서브탭에서 `Routes` 을 클릭 후, `Edit routes` 로 추가 경로를 설정합니다.
