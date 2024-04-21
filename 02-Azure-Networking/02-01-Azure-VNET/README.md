@@ -6,6 +6,8 @@ Azure Virtual Network 환경을 구성 합니다.
 1. Resource Group 생성
 2. Virtual Network 생성 및 Subnet 구성
 3. Route Table 구성
+4. Network Security Group 생성
+5. Private Subnet 에 NSG 연결
 
 ---
 ## 1. Resource Group 생성
@@ -73,6 +75,23 @@ Route Table 경로 설정이 완료되었다면, Subnet 에 해당 경로를 적
 서브 메뉴의 서브넷을 선택 하고 Private Subnet 으로 동작할 `{skuserNN}-azure-subnet-02` 를 선택합니다.  
   
 `{skuserNN}-azure-subnet-02` 의 경로 테이블을 `{skuserNN}-private-route-table` 로 지정 후 저장 합니다.  
+
+
+## 4. Network Security Group 생성
+상단 검색에서 `네트워크 보안 그룹` 으로 검색 후, `+ 만들기 `를 클릭하여 생성 작업을 수행합니다.  
+
+- 리소스 그룹: `{skuserNN}-resource-group` 
+- 이름: `{skuserNN}-private-subnet-nsg`
+- 지역: Virtual Network 와 동일 지역으로 선택
+
+
+## 5. Private Subnet 에 NSG 연결
+위에서 만든 Network Security Group 을 Private Subnet 에 적용해 보도록 합니다.  
+가상 네트워크 `{skuserNN}-azure-vnet` 를 선택 후, 서브 메뉴 중 `서브넷` 을 선택하여, Private Subnet 인 `{skuserNN}-azure-subnet-02` 를 선택 합니다. 
+
+- 네트워크 보안 그룹: `{skuserNN}-private-subnet-nsg` 
+
+설정 완료 후 저장 합니다.  
 
 ---
 
