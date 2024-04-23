@@ -1,12 +1,11 @@
-# AWS VPN Connection 환경 구성
+# Azure VNet 과 AWS VPN Connection 연동 구성
 
 1. AWS Customer Gateway 설정
-4. AWS VPN Connection 설정
-5. Azure VPN site 생성 및 연결
-6. Azure Virtual Network 와 Hub 연결
-7. AWS VPC 와 On-premise 의 Route 설정 추가
-8. Azure Virtual Network 의 Network Security Group 설정 추가
-9. AWS 및 On-premise 환경 연결 확인
+2. AWS VPN Connection 설정
+3. Azure VPN site 생성 및 연결
+4. AWS VPC 와 On-premise 의 Route 설정 추가
+5. Azure Virtual Network 의 Network Security Group 설정 추가
+6. AWS 및 On-premise 환경 연결 확인
 ---
 
 ## 1. AWS Customer Gateway 설정
@@ -23,7 +22,6 @@ AWS Customer Gateway 를 생성하기 위해서는 Azure VPN Gateway 의 BGP ASN
 
 ---
 
-
 Azure VPN Gateway 정보를 미리 파악했다면, 이제 AWS 의 VPC 페이지에서 `고객 게이트웨이 (Customer gateways)` 메뉴를 선택하여, `고객 게이트웨이 생성 (Create customer gateway)` 를 수행합니다.  
 
 * Name : `{skuserNN}-azure-vpn-gw-01`
@@ -32,7 +30,7 @@ Azure VPN Gateway 정보를 미리 파악했다면, 이제 AWS 의 VPC 페이지
 * 인증서 ARN: 비워둡니다.
 * 디바이스: 비워둡니다.
 
-## 4. AWS VPN Connection 설정
+## 2. AWS VPN Connection 설정
 VPC 메뉴 중 `Site-to-Site VPN` 연결을 선택하고, `VPN 연결 생성` 버튼을 클릭해 신규 Connection 을 생성합니다. 
 
 * 이름 태그 : `{skuserNN}-azure-vpn-conn`
@@ -56,10 +54,10 @@ VPC 메뉴 중 `Site-to-Site VPN` 연결을 선택하고, `VPN 연결 생성` �
 * 터널 2의 사전 공유 키: `hybridcloud123`
 * 터널 2의 고급 오션: `기본 옵션 사용`
 
-VPN Connection 생성이 완료되면, 두 개의 Tunnel 설정을 `Tunnel details` 탭에서 확인 가능합니다. 이 정보는 이후에 Azure vHub 의 VPN site 설정 시 사용됩니다.  
+VPN Connection 생성이 완료되면, 두 개의 Tunnel 설정을 `Tunnel details` 탭에서 확인 가능합니다. 이 정보는 이후에 Azure vHub 의 VPN site 설정 시 사용됩니다. 
 
 
-## 5. Azure VPN site 생성 및 연결
+## 3. Azure VPN site 생성 및 연결
 
 AWS VPN Connection 생성을 완료했다면, 해당 정보를 바탕으로 Azure Virtual WAN 의 VPN Site 연결 작업을 시작합니다.  
 위 단계에서 구성한 Virtual WAN `{skuserNN}-azure-vwan` 의 Hub `{skuserNN}-azure-hub` 를 선택하고, `VPN (Site to site)` 메뉴로 이동합니다.  
@@ -86,28 +84,7 @@ VPN site 생성 후, 해당 site 를 선택 후 `Connect VPN sites` 를 수행�
 
 만약, 추가로 AWS VPN Connection 의 Tunnel 2 와 연결을 추가하고 싶다면 VPN Site 를 하나 더 생성하도록 합니다.  
 
-## 6. Azure Virtual Network 와 Hub 연결
-
-Virtual Hub 에 Azure Virtual Network 를 연동 하도록 합니다.  
-`{skuserNN}-azure-vwan` Virtual WAN 을 선택 후, `가상 네트워크 연결 (Virtual network connections)` 메뉴로 이동 하여, `연결 추가 (Add connection)` 을 수행 합니다.  
-
-* Connection name : `skuserNN-azure-vnet-conn`
-* Hubs : `azure-hub`
-* Resource Group : `azure-environment`
-* Virtual network : `azure-vnet` 
-* Propagate to none : `No`
-* Associate Route Table : `Default`
-* Propagate to Route Tables : `Default`
-* Propagate to labels : `default`
-
-연결이 완료되었으면, `skuserNN-azure-hub` 의 `Route Tables` 정보를 업데이트합니다.  
-현재 생성되어 있는 Route Table 로 `Default` 를 선택합니다.  
-여기서 `Propagations` 탭에서 다음과 같이 정보를 설정 합니다.  
-
-* Propagate routes from connections to this route table?  `Yes`  
-* Virtual Network : `skuserNN-azure-vnet` 선택
-
-## 7. AWS VPC 와 On-premise 의 Route 설정 추가
+## 4. AWS VPC 와 On-premise 의 Route 설정 추가
 
 AWS VPC 와 On-premise 네트워크에 배포된 인스턴스가 Azure Virtual Network 와 통신하기 위해 추가적인 경로 설정을 합니다.  
 AWS VPC 가 있는 Region 으로 이동하여, `VPC` 페이지를 통해 `Route Tables` 메뉴로 이동하여, 해당 VPC 와 맵핑된 Route table 을 선택합니다.  
@@ -121,7 +98,7 @@ AWS VPC 가 있는 Region 으로 이동하여, `VPC` 페이지를 통해 `Route 
 * Destination : `172.16.0.0/16` (Azure Virtual Network CIDR)
 * Target : Instance (`skuserNN-vpngw-test`)
  
-## 8. Azure Virtual Network 의 Network Security Group 설정 추가
+## 5. Azure Virtual Network 의 Network Security Group 설정 추가
 
 Virtual Network 의 Subnet 에 설정된 Network Security Group 인 `azure-vnet-nsg` 에 추가적으로,  
 AWS VPC 와 On-premise 의 네트워크 대역을 허용하는 룰을 설정합니다.  
@@ -164,7 +141,7 @@ AWS VPC 와 On-premise 의 네트워크 대역을 허용하는 룰을 설정합�
 * Name : `AllowAWSVPCCidrBlockCustomAnyOutbound`
 * Action : `Allow`
 
-## 9. AWS 및 On-premise 환경 연결 확인
+## 6. AWS 및 On-premise 환경 연결 확인
 
 마지막으로, AWS, Azure, On-premise 네트워크에 각각 인스턴스를 배포 후, Ping 을 통해 통신 테스트를 합니다.  
 AWS, On-premise 환경에 배포된 인스턴스의 Security Group 도 각각의 대역에 대한 통신 허가가 필요합니다.  
