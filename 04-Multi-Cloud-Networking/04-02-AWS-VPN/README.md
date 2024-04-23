@@ -1,8 +1,6 @@
-# Azure Virtual WAN 환경 구성
+# AWS VPN Connection 환경 구성
 
-1. Virtual WAN 생성
-2. Hubs 생성과 함께 VPN Gateway 배포
-3. AWS Customer Gateway 설정
+1. AWS Customer Gateway 설정
 4. AWS VPN Connection 설정
 5. Azure VPN site 생성 및 연결
 6. Azure Virtual Network 와 Hub 연결
@@ -11,34 +9,9 @@
 9. AWS 및 On-premise 환경 연결 확인
 ---
 
-## 1. Virtual WAN 생성
-상단 검색에서 `가상 WAN` 으로 검색 후, `+ 만들기 `를 클릭하여 생성 작업을 수행합니다.  
+## 1. AWS Customer Gateway 설정
 
-* 리소스 그룹 : `{skuserNN}-resource-group`
-* 지역 : 적절한 지역 선택
-* 이름 : `{skuserNN}-azure-vwan`
-* 유형 : `표준` 선택
-
-## 2. 가상 Hubs 생성과 함께 VPN Gateway 배포
-
-* 지역 : Virtual WAN 과 동일한 지역 선택
-* 이름 : `{skuserNN}-azure-hub`
-* 허브 프라이빗 주소 공간 : `192.168.0.0/24`
-* 가상 허브 용량 : `2 Routing Infrastructure Units, 3 Gbps Router, Supports 2000 VMs`
-* 허브 라우팅 기본 설장 : `VPN`
-
-[사이트 대 사이트]
-* Site to site(VPN Gateway)를 만드시겠습니까? : `Yes`
-  * AS Number : `65515`
-  * 게이트웨이 배율 단위 : `1 scale unit - 500 Mbps x 2` 선택
-  * 라우팅 기본 설정: `Microsoft 네트워크` 선택
-
-나머지(`지점 대 사이트`, `ExpressRoute`)는 생성하지 않고 가상 Hub 생성을 시작합니다.  
-
-
-## 3. AWS Customer Gateway 설정
-
-AWS 쪽에 Azure VPN Gateway 를 선언하기 위해 Customer Gateway 를 설정 합니다.  
+AWS 에 Azure VPN Gateway 를 연결하기 위해 Customer Gateway 를 설정 합니다.  
 Azure VPN Gateway 인스턴스가 2개가 있으므로, Customer Gateway 도 2개를 설정합니다.  
 
 ---
@@ -46,39 +19,42 @@ Azure VPN Gateway 인스턴스가 2개가 있으므로, Customer Gateway 도 2�
 (사전 작업)  
 AWS Customer Gateway 를 생성하기 위해서는 Azure VPN Gateway 의 BGP ASN 정보와 Public IP 가 필요합니다.  
 해당 정보를 미리 파악하도록 합니다.  
-이전 단계에서 생성한 `azure-vwan` 에서 Hubs 중 `azure-hub` 를 선택하고, `VPN (Site to site)` 메뉴로 이동하여, `Gateway configuration` 의 `View/Configure` 를 통해 VPN Gateway 정보를 파악 합니다.  
+이전 단계에서 생성한 `{skuserNN}-azure-vwan` 에서 Hubs 중 `{skuserNN}-azure-hub` 를 선택하고, `VPN (사이트 간)` 메뉴로 이동하여, `게이트웨이 구성` 의 `보기/구성` 를 통해 VPN Gateway 정보를 파악 합니다.  
 
 ---
 
 
-Azure VPN Gateway 정보를 미리 파악했다면, 이제 AWS 의 VPC 페이지에서 `Customer gateways` 메뉴를 선택하여, `Create customer gateway` 를 수행합니다.  
+Azure VPN Gateway 정보를 미리 파악했다면, 이제 AWS 의 VPC 페이지에서 `고객 게이트웨이 (Customer gateways)` 메뉴를 선택하여, `고객 게이트웨이 생성 (Create customer gateway)` 를 수행합니다.  
 
-* Name : `azure-vpn-gw-01`
+* Name : `{skuserNN}-azure-vpn-gw-01`
 * BGP ASN : `65515` (사전 작업에서 파악한 BGP ASN)
 * IP Address : (사전작업에서 파악한 VPN Instance 0 의 `Public IP Address`)
+* 인증서 ARN: 비워둡니다.
+* 디바이스: 비워둡니다.
 
 ## 4. AWS VPN Connection 설정
+VPC 메뉴 중 `Site-to-Site VPN` 연결을 선택하고, `VPN 연결 생성` 버튼을 클릭해 신규 Connection 을 생성합니다. 
 
-* Name : `azure-vpn-conn`
-* Target gateway type : `Transit gateway`
-* Transit gateway : `aws-transit-gateway` (이전 단계에서 생성한 Transit gateway 선택)
-* Customer gateway : `Existing`
-* Customer gateway ID : 이전 단계에서 `azure-vpn-gw-01` 선택
-* Routing options : `Dynamic (requires BGP)`
-* Tunnel inside IP version : `IPv4`
+* 이름 태그 : `{skuserNN}-azure-vpn-conn`
+* 대상 게이트웨이 유형 : `Transit gateway`
+* Transit gateway : `{skuserNN}-transit-gateway` (이전 단계에서 생성한 Transit gateway 선택)
+* 고객 게이트웨이 : `Existing` 선택
+* 고객 게이트웨이 ID : 이전 단계에서 `azure-vpn-gw-01` 선택
+* 라우팅 옵션 : `동적 (BGP 필요)`
+* 터널 내부 IP 버전 : `IPv4`
 * Local IPv4 network CIDR : 설정 X 
 * Remote IPv4 network CIDR : 설정 X
 * Outisde IP address type : `PublicIpv4`
 
 [Tunnel 1 options]
-* Inside IPv4 CIDR for tunnel 1 : `169.254.21.0/30` 
-* Pre-shared key for tunnel 1 : `hybridcloud123`
-* Advanced options for tunnel 1 : `Use default options`
+* 터널 1의 내부 IPv4 CIDR: `169.254.21.0/30` 
+* 터널 1의 사전 공유 키: `hybridcloud123`
+* 터널 1의 고급 오션: `기본 옵션 사용`
 
 [Tunnel 2 options]
-* Inside IPv4 CIDR for tunnel 1 : `169.254.22.0/30` 
-* Pre-shared key for tunnel 1 : `hybridcloud123`
-* Advanced options for tunnel 1 : `Use default options`
+* 터널 2의 내부 IPv4 CIDR: `169.254.22.0/30` 
+* 터널 2의 사전 공유 키: `hybridcloud123`
+* 터널 2의 고급 오션: `기본 옵션 사용`
 
 VPN Connection 생성이 완료되면, 두 개의 Tunnel 설정을 `Tunnel details` 탭에서 확인 가능합니다. 이 정보는 이후에 Azure vHub 의 VPN site 설정 시 사용됩니다.  
 
@@ -86,11 +62,11 @@ VPN Connection 생성이 완료되면, 두 개의 Tunnel 설정을 `Tunnel detai
 ## 5. Azure VPN site 생성 및 연결
 
 AWS VPN Connection 생성을 완료했다면, 해당 정보를 바탕으로 Azure Virtual WAN 의 VPN Site 연결 작업을 시작합니다.  
-위 단계에서 구성한 Virtual WAN `azure-vwan` 의 Hub `azure-hub` 를 선택하고, `VPN (Site to site)` 메뉴로 이동합니다.  
-여기서, 하단의 `Create new VPN site` 를 수행하도록 합니다. 
+위 단계에서 구성한 Virtual WAN `{skuserNN}-azure-vwan` 의 Hub `{skuserNN}-azure-hub` 를 선택하고, `VPN (Site to site)` 메뉴로 이동합니다.  
+여기서, 하단의 `새 VPN 사이트 만들기` 를 수행하도록 합니다. 
 
-* Region : `Korea Central`
-* Name : `aws-vpn-conn-01`
+* 지역 : `{skuserNN}-azure-vwan` 과 동일 지역
+* 이름 : `{skuserNN}-aws-vpn-conn-01`
 * Device vendor : `aws`
 * Link 설정
   * Link name : `azure-vpn-conn-tun1`
@@ -113,9 +89,9 @@ VPN site 생성 후, 해당 site 를 선택 후 `Connect VPN sites` 를 수행�
 ## 6. Azure Virtual Network 와 Hub 연결
 
 Virtual Hub 에 Azure Virtual Network 를 연동 하도록 합니다.  
-`azure-vwan` Virtual WAN 을 선택 후, `Virtual network connections` 메뉴로 이동 하여, `Add connection` 을 수행 합니다.  
+`{skuserNN}-azure-vwan` Virtual WAN 을 선택 후, `가상 네트워크 연결 (Virtual network connections)` 메뉴로 이동 하여, `연결 추가 (Add connection)` 을 수행 합니다.  
 
-* Connection name : `azure-vnet-conn`
+* Connection name : `skuserNN-azure-vnet-conn`
 * Hubs : `azure-hub`
 * Resource Group : `azure-environment`
 * Virtual network : `azure-vnet` 
@@ -124,12 +100,12 @@ Virtual Hub 에 Azure Virtual Network 를 연동 하도록 합니다.
 * Propagate to Route Tables : `Default`
 * Propagate to labels : `default`
 
-연결이 완료되었으면, `azure-hub` 의 `Route Tables` 정보를 업데이트합니다.  
+연결이 완료되었으면, `skuserNN-azure-hub` 의 `Route Tables` 정보를 업데이트합니다.  
 현재 생성되어 있는 Route Table 로 `Default` 를 선택합니다.  
 여기서 `Propagations` 탭에서 다음과 같이 정보를 설정 합니다.  
 
 * Propagate routes from connections to this route table?  `Yes`  
-* Virtual Network : `azure-vnet` 선택
+* Virtual Network : `skuserNN-azure-vnet` 선택
 
 ## 7. AWS VPC 와 On-premise 의 Route 설정 추가
 
@@ -137,13 +113,13 @@ AWS VPC 와 On-premise 네트워크에 배포된 인스턴스가 Azure Virtual N
 AWS VPC 가 있는 Region 으로 이동하여, `VPC` 페이지를 통해 `Route Tables` 메뉴로 이동하여, 해당 VPC 와 맵핑된 Route table 을 선택합니다.  
 하단 Route 탭에서 `Edit routes` 를 수행합니다.  
 
-* Destination : `172.31.0.0/16` (Azure Virtual Network CIDR)
-* Target : Transit gateway (`aws-tgw-attach`)
+* Destination : `172.16.0.0/16` (Azure Virtual Network CIDR)
+* Target : Transit gateway (`skuserNN-aws-tgw-attach`)
 
 마찬가지로, On-premise 네트워크가 있는 리전으로 이동하여,  동일하게 Route 정보를 아래와 같이 추가해 줍니다.  
 
-* Destination : `172.31.0.0/16` (Azure Virtual Network CIDR)
-* Target : Instance (`infra-vpngw-test`)
+* Destination : `172.16.0.0/16` (Azure Virtual Network CIDR)
+* Target : Instance (`skuserNN-vpngw-test`)
  
 ## 8. Azure Virtual Network 의 Network Security Group 설정 추가
 
@@ -151,7 +127,7 @@ Virtual Network 의 Subnet 에 설정된 Network Security Group 인 `azure-vnet-
 AWS VPC 와 On-premise 의 네트워크 대역을 허용하는 룰을 설정합니다.  
 
 [Inbound Rule #1]
-* Source : `10.10.0.0/16` (On-premise 네트워크 대역)
+* Source : `192.168.0.0/16` (On-premise 네트워크 대역)
 * Source port ranges : `*`
 * Destination : `Any`
 * Service : `Custom`
@@ -160,7 +136,7 @@ AWS VPC 와 On-premise 의 네트워크 대역을 허용하는 룰을 설정합�
 * Action : `Allow`
 
 [Inbound Rule #2]
-* Source : `172.16.0.0/16` (AWS VPC 네트워크 대역)
+* Source : `10.10.0.0/16` (AWS VPC 네트워크 대역)
 * Source port ranges : `*`
 * Destination : `Any`
 * Service : `Custom`
@@ -172,7 +148,7 @@ AWS VPC 와 On-premise 의 네트워크 대역을 허용하는 룰을 설정합�
 * Source : `Any` 
 * Source port ranges : `*`
 * Destination : `IP Address`
-* Destination IP addresses/CIDR ranges : `10.10.0.0/16` (On-premise 네트워크 대역)
+* Destination IP addresses/CIDR ranges : `192.168.0.0/16` (On-premise 네트워크 대역)
 * Service : `Custom`
 * Destination port ranges : `*`
 * Name : `AllowOnPremCidrBlockCustomAnyOutbound`
@@ -181,8 +157,8 @@ AWS VPC 와 On-premise 의 네트워크 대역을 허용하는 룰을 설정합�
 [Outbound Rule #2]
 * Source : `Any` 
 * Source port ranges : `*`
-* Destination : `Any`
-* Destination IP addresses/CIDR ranges : `172.16.0.0/16` (AWS VPC 네트워크 대역)
+* Destination : `IP Address`
+* Destination IP addresses/CIDR ranges : `10.10.0.0/16` (AWS VPC 네트워크 대역)
 * Service : `Custom`
 * Destination port ranges : `*`
 * Name : `AllowAWSVPCCidrBlockCustomAnyOutbound`

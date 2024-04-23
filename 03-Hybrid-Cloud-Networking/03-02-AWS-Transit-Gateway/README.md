@@ -1,9 +1,7 @@
-# On-premise 와 AWS 연동 - Transit Gateway 실습
+# On-premise 와 AWS 연동 - Transit Gateway VPC 연동 실습
 
 1. Transit Gateway 구성
 2. Transit Gateway 와 AWS VPC 연동
-3. On-premise 연결을 위한 Customer Gateway 생성
-4. On-premise 연결을 위한 VPN Connection 구성
 
 ---
 
@@ -46,36 +44,6 @@ Transit gateway 구성이 완료되었으면, AWS VPC 와 Transit gateway 를 �
 - Destination : `192.168.0.0/16` (On-premise 네트워크의 CIDR)
 - Target : Transit gateway 선택 (`{skuserNN}-tgw-attach`)
 
-## 3. On-premise 연결을 위한 Customer Gateway 생성
-
-On-premise 의 VPN Gateway 역할을 할 Customer Gateway 를 생성합니다.  
-해당 Gateway 는 실제 VPN 장비를 생성하는 것은 아닙니다. 이는 이후 5번 단계에서 실제 VPN Gateway 를 배포 하며, Customer Gateway 는 이에 대한 준비 단계로 이해하시면 됩니다.  
-
-**(사전 준비)**  
-설정을 시작하기 전에, Customer Gateway 에서 사용할 EIP 를 할당 받도록 합니다.  
-EIP 는 `Elastic IPs` 메뉴로 이동하여 `Allocate Elastic IP address` 를 수행 합니다. (`{skuser30}-cgw-eip`)  
-*(참고) 이때, 해당 EIP 의 `Allocation ID`(`eipalloc` 으로 시작하는 ID) 를 기억해 두어야 합니다. 이후 설정에 필요 합니다.*
-
-EIP 할당이 완료 되었다면, VPC 페이지에서 `Customer Gateway` 메뉴로 이동 하고, `Create customer gateway` 를 수행 합니다. 
-
-* name : `{skuserNN}-on-premise-cgw`
-* BGP ASN : `65000`
-* IP Address : 할당 받은 EIP 주소
-* Tags : `Name: {skuserNN}-on-premise-cgw`
-
-
-## 4. On-premise 연결을 위한 VPN Connection 구성
-
-On-premise 구간을 연동할 VPN Connection 설정을 시작 합니다.
-`Site-to-Site VPN connections` 메뉴로 이동하여, `Create VPN connection` 을 수행 합니다.  
-
-- 이름 태그(Name) : `{skuserNN}-on-prem-conn`
-- 대상 게이트웨이 유형(Target gateway type) : `Transit gateway`
-- Transit gateway : 이전 단계에서 생성한 `{skuserNN}-transit-gateway` 선택
-- 고객 게이트웨이(Customer gateway) : `기존 Existing`
-- 고객 게이트웨이 ID(Customer gateway ID) : `{skuserNN}-on-premise-cgw`
-- 라우팅 옵션(Routing options) : `동적 Dynamic (requires BGP)`
-- 터널 내부 IP 버전(Tunnel inside IP version) : `IPv4`
-- Tags : `Name : {skuserNN}-on-prem-conn`
-
 ---
+
+Transit Gateway 와 VPC 연동 실습을 완료하였습니다.

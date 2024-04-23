@@ -1,12 +1,48 @@
 # On-premise 와 AWS 연동 - On-premise VPN 구성 실습
 
-1. On-premise 환경에 VPN Gateway 설치(StrongSwan) 및 Customer Gateway 구성
-2. Transit Gateway 와 VPN 연동
-3. AWS VPC 와 On-premise 간 통신 확인을 위한 EC2 Instance 배포 및 통신 확인
+1. On-premise 연결을 위한 Customer Gateway 생성
+2. On-premise 연결을 위한 VPN Connection 구성
+3. On-premise 환경에 VPN Gateway 설치(StrongSwan) 및 Customer Gateway 구성
+4. Transit Gateway 와 VPN 연동
+5. AWS VPC 와 On-premise 간 통신 확인을 위한 EC2 Instance 배포 및 통신 확인
+
 ---
 
 
-## 1. On-premise 환경에 VPN Gateway 설치(StrongSwan) 및 Customer Gateway 구성
+## 1. On-premise 연결을 위한 Customer Gateway 생성
+
+On-premise 의 VPN Gateway 역할을 할 Customer Gateway 를 생성합니다.  
+해당 Gateway 는 실제 VPN 장비를 생성하는 것은 아닙니다. 이는 이후 5번 단계에서 실제 VPN Gateway 를 배포 하며, Customer Gateway 는 이에 대한 준비 단계로 이해하시면 됩니다.  
+
+**(사전 준비)**  
+설정을 시작하기 전에, Customer Gateway 에서 사용할 EIP 를 할당 받도록 합니다.  
+EIP 는 `Elastic IPs` 메뉴로 이동하여 `Allocate Elastic IP address` 를 수행 합니다. (`{skuser30}-cgw-eip`)  
+*(참고) 이때, 해당 EIP 의 `Allocation ID`(`eipalloc` 으로 시작하는 ID) 를 기억해 두어야 합니다. 이후 설정에 필요 합니다.*
+
+EIP 할당이 완료 되었다면, VPC 페이지에서 `Customer Gateway` 메뉴로 이동 하고, `Create customer gateway` 를 수행 합니다. 
+
+* name : `{skuserNN}-on-premise-cgw`
+* BGP ASN : `65000`
+* IP Address : 할당 받은 EIP 주소
+* Tags : `Name: {skuserNN}-on-premise-cgw`
+
+
+## 2. On-premise 연결을 위한 VPN Connection 구성
+
+On-premise 구간을 연동할 VPN Connection 설정을 시작 합니다.
+`Site-to-Site VPN connections` 메뉴로 이동하여, `Create VPN connection` 을 수행 합니다.  
+
+- 이름 태그(Name) : `{skuserNN}-on-prem-conn`
+- 대상 게이트웨이 유형(Target gateway type) : `Transit gateway`
+- Transit gateway : 이전 단계에서 생성한 `{skuserNN}-transit-gateway` 선택
+- 고객 게이트웨이(Customer gateway) : `기존 Existing`
+- 고객 게이트웨이 ID(Customer gateway ID) : `{skuserNN}-on-premise-cgw`
+- 라우팅 옵션(Routing options) : `동적 Dynamic (requires BGP)`
+- 터널 내부 IP 버전(Tunnel inside IP version) : `IPv4`
+- Tags : `Name : {skuserNN}-on-prem-conn`
+
+
+## 3. On-premise 환경에 VPN Gateway 설치(StrongSwan) 및 Customer Gateway 구성
 
 On-premise 환경과 Transit Gateway 구간을 VPN 으로 연동하려면, VPN 전용 장비가 필요합니다.  
 하지만, 실습 목적의 환경에서 VPN 전용 장비를 사용하긴 어려우므로, EC2 Instance 에 VPN 역할을 수행할 수 있도록 오픈소스 S/W(StrongSwan, Quagga) 를 설치하여 동작시킬 예정입니다.  
@@ -85,7 +121,7 @@ Cloudformation 페이지로 이동하여, `Stacks` 메뉴에서 `Create stack` �
 
 파라미터 설정을 마친 후, Cloudformation 을 수행하면, 일정 시간 이후, Stack 의 상태가 `CREATE_COMPLETE` 로 변경되면 모두 정상 작동한 것입니다.
 
-## 2. Transit Gateway 와 VPN 연동
+## 4. Transit Gateway 와 VPN 연동
 
 On-premise 에 VPN Gateway 구성을 마쳤다면, VPN Connection 과 Transit Gateway 이 연결된 것을 확인 가능하다.  
 `Transit gateway attachments` 메뉴로 이동하여, 리소스 유형이 `VPN` 인 것 중에 Transit Gateway ID 로 검색 하면, VPN Gateway 와 Transit Gateway  연동 내용을 확인 가능하다. 
@@ -99,7 +135,7 @@ On-premise 네트워크에서도 VPN 과 통신이 가능하도록 경로 설정
 * Target : `Instance` 선택 후, VPN Gateway 로 생성된 인스턴스를 선택합니다. (예시대로 생성시, `skuserNN-vpngw-test`)
 
 
-## 3. AWS VPC 와 On-premise 간 통신 확인을 위한 EC2 Instance 배포 및 통신 확인
+## 5. AWS VPC 와 On-premise 간 통신 확인을 위한 EC2 Instance 배포 및 통신 확인
 
 AWS VPC 와 On-premise 간 VPN 연동을 위한 모든 설정을 마쳤습니다.  
 실제 통신이 되는지, On-premise 네트워크에 EC2 Instance 를 생성하고 Transit Gateway 를 통해 연동된 VPC 의 Private Subnet 에 배포된 EC2 인스턴스의 Private IP 로 Ping 을 통해 연결이 되는지 확인합니다.  
