@@ -5,7 +5,8 @@ Azure 서비스에 대한 요청을 인터넷이 아닌 Service Endpoint 를 통
 아래 순서로 진행됩니다. 
 
 1. Storage Account 생성
-
+2. 파일 공유 생성
+3. Virtual Machine 에 파일 공유 연결
 
 ---
 ## 1. Storage Account 생성
@@ -44,6 +45,34 @@ Azure 서비스에 대한 요청을 인터넷이 아닌 Service Endpoint 를 통
 
 모든 검토 완료후 만들기를 클릭하여 Storage Account 를 생성 합니다.  
   
+
+## 2. 파일 공유 생성
+서브 메뉴 중 `파일 공유` 를 클릭 후 `+ 파일 공유` 를 클릭하여 새로운 파일 공유를 생성합니다. 
+
+1. 이름: `{skuserNN}-file-share`
+2. 액세스 계층: 트랜잭션 최적화됨
+3. 백업 사용: 체크 해제
+
+`검토+만들기`를 눌러 새로운 파일 공유를 생성 합니다.  
+  
+새롭게 생성된 파일 공유 `{skuserNN}-file-share` 를 선택 후, 연결을 눌러 Linux 탭을 확인 합니다.  
+이때 `스크립트 표시` 를 누르게 되면 가상 머신에서 연결 가능한 스크립트가 자동으로 완성되고 이를 복사 합니다.  
+
+
+## 3. Virtual Machine 에 파일 공유 연결
+파일 공유를 연결할 가상 머신을 선택합니다.  
+상단 검색에서 `가상 머신` 으로 검색 후, 이전 단계에서 프라이빗 서브넷에 생성한 가상 머신 `{skuserNN}-private-vm` 을 선택합니다.  
+해당 가상 머신의 `연결` -> `Bastion 을 통해 연결` 을 눌러 Bastion 환경을 통해 가상 머신에 연결합니다.  
+  
+가상 머신에 접속한 후, 위 단계에서 복사한 스크립트 파일을 생성 하고 실행합니다.
+스크립트를 생성하면 자동으로 파일 공유에 마운트를 실행하게 되고 아래와 같이 마운트 정보 조회시 확인 가능합니다.  
+
+```
+> df -h
+Filesystem                                                     Size  Used Avail Use% Mounted on
+...
+//skuser30storage.file.core.windows.net/skuser30-fileshare-01  5.0T     0  5.0T   0% /mnt/skuser30-fileshare-01
+```
 
 
 ---
