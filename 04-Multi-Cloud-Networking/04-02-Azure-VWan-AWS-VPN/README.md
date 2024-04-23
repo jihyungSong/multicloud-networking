@@ -36,7 +36,7 @@ VPC 메뉴 중 `Site-to-Site VPN` 연결을 선택하고, `VPN 연결 생성` �
 * 이름 태그 : `{skuserNN}-azure-vpn-conn`
 * 대상 게이트웨이 유형 : `Transit gateway`
 * Transit gateway : `{skuserNN}-transit-gateway` (이전 단계에서 생성한 Transit gateway 선택)
-* 고객 게이트웨이 : `Existing` 선택
+* 고객 게이트웨이 : `기존(Existing)` 선택
 * 고객 게이트웨이 ID : 이전 단계에서 `azure-vpn-gw-01` 선택
 * 라우팅 옵션 : `동적 (BGP 필요)`
 * 터널 내부 IP 버전 : `IPv4`

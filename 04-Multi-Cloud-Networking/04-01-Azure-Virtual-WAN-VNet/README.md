@@ -18,7 +18,7 @@
 
 * 지역 : Virtual WAN 과 동일한 지역 선택
 * 이름 : `{skuserNN}-azure-hub`
-* 허브 프라이빗 주소 공간 : `192.168.0.0/24`
+* 허브 프라이빗 주소 공간 : `10.200.0.0/24`
 * 가상 허브 용량 : `2 Routing Infrastructure Units, 3 Gbps Router, Supports 2000 VMs`
 * 허브 라우팅 기본 설정 : `VPN`
 
