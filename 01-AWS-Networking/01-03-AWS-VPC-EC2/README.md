@@ -95,14 +95,14 @@ sudo apt install -y nginx
 sudo systemctl start nginx
 sudo systemctl enable nginx
 
-TOKEN=(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 IP_ADDR=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/local-ipv4)
 
 sudo rm -rf /var/www/html/*
 sudo chown -R ubuntu:ubuntu /var/www
 sudo chmod 2775 /var/www
 
-sudo echo "<h1>HELLO</h1> <p>SERVER IP : $IP_ADDR</p>" >> /var/www/html/index.html
+sudo echo "<h1>AWS</h1> <p>SERVER IP : $IP_ADDR</p>" >> /var/www/html/index.html
 sudo chown -R root:root /var/www
 ```
 
